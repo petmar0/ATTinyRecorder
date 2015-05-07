@@ -7,6 +7,9 @@
 // Includes the SdFat library - https://code.google.com/p/sdfatlib/downloads/list
 //
 // ----------------------------------------------------
+#ifndef SS
+#define SS 4
+#endif
 
 #include <SdFat.h>
 
@@ -158,7 +161,7 @@ void Setup_timer2() {
 
   TCCR2B = _BV(CS21);  // Timer2 Clock Prescaler to : 8
   TCCR2A = _BV(WGM21); // Interupt frequency  = 16MHz / (8 x 90 + 1) = 22191Hz
-  OCR2A = 90; // Compare Match register set to 90
+  OCR1A = 90; // Compare Match register set to 90
 
 }
 
