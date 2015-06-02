@@ -7,9 +7,6 @@
 // Includes the SdFat library - https://code.google.com/p/sdfatlib/downloads/list
 //
 // ----------------------------------------------------
-#ifndef SS
-#define SS 4
-#endif
 
 #include <SdFat.h>
 
@@ -31,10 +28,12 @@ unsigned int bitsPerSample = 8;
 unsigned long dataSize = 0L;
 unsigned long recByteCount = 0L;
 unsigned long recByteSaved = 0L;
-
-const int ledStart = 3;
+const int btnStart = 6;
+const int btnStop = 5;
+const int ledStart = 2;
 const int ledStop = 3;
-
+int recPressed = 0;
+int stopPressed = 0;
 unsigned long oldTime = 0L;
 unsigned long newTime = 0L;
 byte buf00[512]; // buffer array 1
@@ -51,6 +50,8 @@ void setup() { // THIS RUNS ONCE
   pinMode(10, OUTPUT);
   pinMode(ledStart, OUTPUT);
   pinMode(ledStop, OUTPUT);
+  pinMode(btnStop, INPUT_PULLUP);
+  pinMode(btnStart, INPUT_PULLUP);
   
   if (sd.begin(chipSelect, SPI_FULL_SPEED)) { // initialise card on SPI to 8MHz SPI bus speed
     for (int dloop = 0; dloop < 4; dloop++) {
@@ -68,10 +69,15 @@ void setup() { // THIS RUNS ONCE
 
 void loop() { // THIS RUNS LOTS!
 
- StartRec(); // launch StartRec method
-  
-  if (recByteCount % 1024 == 512) { rec.write(buf00,512); recByteSaved+= 512; } // save buf01 to card
-  if (recByteCount % 1024 == 0) { rec.write(buf01,512); recByteSaved+= 512; } // save buf02 to card
+//  if (digitalRead(btnStart) == LOW && recPressed == 0) {
+    StartRec(); // launch StartRec method
+//  }
+//  if (digitalRead(btnStop) == LOW) {
+//    StopRec(); // launch StopRec method
+//  }
+//  
+  if (recByteCount % 1024 == 512 && recPressed == 1) { rec.write(buf00,512); recByteSaved+= 512; } // save buf01 to card
+  if (recByteCount % 1024 == 0 && recPressed == 1) { rec.write(buf01,512); recByteSaved+= 512; } // save buf02 to card
 
 }
 
@@ -81,6 +87,8 @@ void StartRec() { // begin recording process
   digitalWrite(ledStop,LOW);
   recByteCount = 0;
   recByteSaved = 0;
+  recPressed = 1; // recording button has been pressed
+  stopPressed = 0;
   writeWavHeader();
   sbi (TIMSK2, OCIE2A); // enable timer interrupt, start grabbing audio
 
@@ -92,6 +100,7 @@ void StopRec() { // stop recording process, update WAV header, close file
   writeOutHeader();
   digitalWrite(ledStart,LOW); // turn off recording LED
   digitalWrite(ledStop,HIGH); // light stop LED
+  recPressed = 0;
   
 }
   
@@ -161,13 +170,13 @@ void Setup_timer2() {
 
   TCCR2B = _BV(CS21);  // Timer2 Clock Prescaler to : 8
   TCCR2A = _BV(WGM21); // Interupt frequency  = 16MHz / (8 x 90 + 1) = 22191Hz
-  OCR1A = 90; // Compare Match register set to 90
+  OCR2A = 90; // Compare Match register set to 90
 
 }
 
 void Setup_ADC() {
 
-  ADMUX = 0; // set ADC to read pin A0, ADLAR to 1 (left adjust)
+  ADMUX = 0x65; // set ADC to read pin A5, ADLAR to 1 (left adjust)
   cbi(ADCSRA,ADPS2); // set prescaler to 8 / ADC clock = 2MHz
   sbi(ADCSRA,ADPS1);
   sbi(ADCSRA,ADPS0);

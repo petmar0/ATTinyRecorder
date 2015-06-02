@@ -3177,6 +3177,12 @@ design rules under a new name.</description>
 <signal name="S$5">
 <via x="4.191" y="5.588" extent="1-16" drill="0.508" diameter="0.254"/>
 </signal>
+<signal name="N$4">
+<via x="9.271" y="12.192" extent="1-16" drill="0.5" diameter="0.254"/>
+</signal>
+<signal name="N$5">
+<wire x1="8.509" y1="12.192" x2="8.89" y2="12.192" width="0.254" layer="16"/>
+</signal>
 </signals>
 <errors>
 <approved hash="5,16,978f9400943a36b1"/>
